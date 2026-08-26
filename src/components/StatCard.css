@@ -1,0 +1,80 @@
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.05rem 1.15rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.stat-card.is-emphasis {
+  border-color: rgba(42, 120, 214, 0.28);
+  background: linear-gradient(180deg, var(--wash-blue) 0%, var(--card) 58%);
+}
+
+.stat-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-value {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.stat-suffix {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-left: 0.18rem;
+  letter-spacing: 0;
+}
+
+.stat-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+
+.stat-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0.1rem 0.36rem;
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-delta.tone-good {
+  color: var(--good);
+  background: rgba(0, 99, 0, 0.08);
+}
+
+.stat-delta.tone-bad {
+  color: var(--critical);
+  background: rgba(208, 59, 59, 0.09);
+}
+
+.stat-delta.tone-neutral {
+  color: var(--ink-secondary);
+  background: var(--wash);
+}
+
+.stat-note {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}

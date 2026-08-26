@@ -1,0 +1,147 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--header-h);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.6rem;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.crumb-group {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.crumb-sep {
+  color: var(--ink-muted);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.crumb-root,
+.crumb-link {
+  color: var(--ink-muted);
+  padding: 0.2rem 0.3rem;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.crumb-root:hover,
+.crumb-link:hover {
+  color: var(--blue);
+  background: var(--wash-blue);
+}
+
+.crumb-current {
+  color: var(--ink);
+  font-weight: 600;
+  padding: 0.2rem 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  background: var(--wash);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 0.45rem 0.75rem;
+  white-space: nowrap;
+}
+
+.date-pill:hover {
+  background: #eef1f4;
+}
+
+.date-pill svg {
+  color: var(--ink-muted);
+}
+
+.header-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 13px;
+}
+
+.header .btn-primary {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wash-blue);
+  color: var(--blue-active);
+  font-size: 12px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-left: 0.15rem;
+}
+
+@media (max-width: 1100px) {
+  .date-pill,
+  .header-export {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .header {
+    padding: 0 1rem;
+  }
+}
+
+/* The header carries four controls now — the breadcrumb yields first. */
+.breadcrumb {
+  flex: 0 1 auto;
+  overflow: hidden;
+}
+
+.header-actions {
+  min-width: 0;
+}
+
+@media (max-width: 1500px) {
+  .breadcrumb .crumb-group:not(:last-child) {
+    display: none;
+  }
+}
+
+@media (max-width: 1080px) {
+  .breadcrumb {
+    display: none;
+  }
+}

@@ -1,0 +1,396 @@
+.analytics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ---------- Title ---------- */
+
+.page-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.page-title h1 {
+  font-size: 22px;
+}
+
+.status-pill {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--good);
+  background: rgba(0, 99, 0, 0.09);
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.page-sub {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-top: 0.2rem;
+}
+
+/* ---------- KPI row ---------- */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+@media (max-width: 1180px) {
+  .stat-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Chart cards ---------- */
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 0.9rem;
+}
+
+@media (max-width: 1000px) {
+  .chart-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.viz-card {
+  padding: 1.25rem 1.35rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.viz-head {
+  margin-bottom: 1.15rem;
+}
+
+.viz-head h2 {
+  font-size: 15px;
+}
+
+.viz-sub {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  margin-top: 0.15rem;
+}
+
+/* Stacked bar: 2px surface gap does the separating, no strokes */
+
+.stacked-bar {
+  display: flex;
+  gap: 2px;
+  height: 20px;
+}
+
+.seg {
+  position: relative;
+  min-width: 4px;
+  transition: filter 0.15s ease;
+}
+
+.seg-start {
+  border-radius: 4px 0 0 4px;
+}
+
+.seg-end {
+  border-radius: 0 4px 4px 0;
+}
+
+.seg:hover,
+.dist-bar:hover {
+  filter: brightness(1.08);
+}
+
+/* Hover tooltip */
+
+.viz-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  padding: 0.32rem 0.55rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.seg:hover .viz-tip,
+.dist-bar:hover .viz-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Legend — identity never rides on color alone */
+
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  margin-top: 0.85rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 12.5px;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.legend-label {
+  color: var(--ink-secondary);
+}
+
+.legend-value {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.legend-pct {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Table view */
+
+.viz-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.3rem;
+  font-size: 12.5px;
+}
+
+.viz-table th,
+.viz-table td {
+  text-align: right;
+  padding: 0.5rem 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.viz-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--grid);
+}
+
+.viz-table th:first-child,
+.viz-table td:first-child {
+  text-align: left;
+}
+
+.viz-table tbody th {
+  font-weight: 500;
+  color: var(--ink-secondary);
+}
+
+.viz-table tbody td {
+  color: var(--ink);
+}
+
+.viz-table tbody tr + tr th,
+.viz-table tbody tr + tr td {
+  border-top: 1px solid var(--grid);
+}
+
+/* Score distribution */
+
+.dist-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.dist-row {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr) 52px;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dist-label {
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+}
+
+.dist-track {
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.dist-bar {
+  position: relative;
+  height: 20px;
+  min-width: 4px;
+  border-radius: 0 4px 4px 0;
+  transition: filter 0.15s ease;
+}
+
+.dist-value {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Derived split — sits at the card foot so both chart cards end level */
+
+.sentiment-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--grid);
+}
+
+.sentiment-strip dt {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.sentiment-strip dd {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-top: 0.1rem;
+}
+
+.sentiment-strip dd span {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+/* ---------- Feature entry point ---------- */
+
+.feature-card {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 1.2rem 1.35rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.feature-card:hover {
+  border-color: rgba(42, 120, 214, 0.45);
+  box-shadow: 0 3px 12px rgba(42, 120, 214, 0.12);
+  transform: translateY(-1px);
+}
+
+.feature-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--wash-blue);
+  color: var(--blue);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.feature-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.feature-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.feature-desc {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  max-width: 62ch;
+}
+
+.feature-cta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .feature-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .feature-cta {
+    margin-left: 0;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
