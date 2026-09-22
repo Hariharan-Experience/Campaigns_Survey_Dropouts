@@ -15,49 +15,50 @@
 :root {
   color-scheme: light;
 
-  /* Surfaces */
-  --canvas: #f5f6f8;
+  /* Surfaces — page sits on a light grey, cards on white */
+  --canvas: #f4f5f7;
   --surface: #ffffff;
   --surface-2: #f7f8fa;
-  --surface-3: #eef0f4;
-  --line: #e2e5ea;
-  --line-soft: #edeff3;
+  --surface-3: #eff1f4;
+  --line: #e4e7ec;
+  --line-soft: #eef0f3;
 
-  /* Ink — muted clears 4.5:1 on the surface, so labels stay legible */
-  --ink: #0b0b0b;
-  --ink-soft: #52514e;
-  --ink-muted: #6b6a64;
-  --ink-faint: #898781;
+  /* Ink — slate rather than near-black, matching the host app */
+  --ink: #2e3a48;
+  --ink-soft: #4a5566;
+  --ink-muted: #7a8494;
+  --ink-faint: #9aa3b2;
 
   /* Categorical pair (identity, never status) */
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
+  --series-1: #2f6fc4;
+  --series-2: #e0663a;
 
-  /* Brand chrome + ordinal blue ramp */
-  --brand: #2a78d6;
-  --brand-hover: #1f63b4;
-  --brand-ink: #184f95;
+  /* Brand chrome: deep navy for structure, a lighter blue for links */
+  --brand: #2c528f;
+  --brand-hover: #23416f;
+  --brand-ink: #2c528f;
   --brand-tint: #eaf2fd;
-  --brand-tint-2: #dbeafd;
-  --brand-line: #c7defa;
-  --track: #cde2fb;
+  --brand-tint-2: #dbe9fb;
+  --brand-line: #c5daf5;
+  --track: #d6e5f8;
   --on-brand: #ffffff;
+  --link: #3d7cc9;
 
   /* Fixed status palette */
-  --good: #0ca30c;
-  --good-ink: #006300;
-  --good-tint: #e9f6e9;
-  --warn: #fab219;
+  --good: #12a150;
+  --good-ink: #0a7a3c;
+  --good-tint: #e9f7ef;
+  --warn: #e8a317;
   --warn-ink: #8a5a00;
-  --warn-tint: #fdf3e0;
-  --crit: #d03b3b;
-  --crit-ink: #b02f2e;
-  --crit-tint: #fbebeb;
+  --warn-tint: #fdf4e3;
+  --crit: #d64545;
+  --crit-ink: #b23333;
+  --crit-tint: #fdedec;
 
-  --shadow-1: 0 1px 2px rgba(11, 11, 11, 0.05);
-  --shadow-2: 0 1px 2px rgba(11, 11, 11, 0.05), 0 10px 24px -14px rgba(11, 11, 11, 0.25);
-  --shadow-3: 0 12px 32px -10px rgba(11, 11, 11, 0.28), 0 2px 6px rgba(11, 11, 11, 0.06);
-  --ring: rgba(42, 120, 214, 0.35);
+  --shadow-1: 0 1px 2px rgba(46, 58, 72, 0.06);
+  --shadow-2: 0 1px 2px rgba(46, 58, 72, 0.06), 0 10px 24px -14px rgba(46, 58, 72, 0.22);
+  --shadow-3: 0 12px 32px -10px rgba(46, 58, 72, 0.26), 0 2px 6px rgba(46, 58, 72, 0.07);
+  --ring: rgba(44, 82, 143, 0.28);
 }
 
 @theme inline {
@@ -80,6 +81,7 @@
   --color-series-2: var(--series-2);
 
   --color-brand: var(--brand);
+  --color-link: var(--link);
   --color-brand-hover: var(--brand-hover);
   --color-brand-ink: var(--brand-ink);
   --color-brand-tint: var(--brand-tint);
@@ -159,8 +161,19 @@
   }
 
   .card-head {
-    @apply flex flex-wrap items-start justify-between gap-x-6 gap-y-3
-      border-b border-line px-4 py-3.5 sm:px-5;
+    @apply flex flex-wrap items-center justify-between gap-x-6 gap-y-2
+      border-b border-line bg-surface-3 px-4 py-3 sm:px-5;
+  }
+
+  /* Table column header: sentence case and dark, divided by hairlines —
+     the host app's convention, not small-caps eyebrows. */
+  .th {
+    @apply border-r border-line px-3.5 py-3 text-[13.5px] font-semibold
+      whitespace-nowrap text-ink last:border-r-0;
+  }
+
+  .td {
+    @apply px-3.5 py-4 align-middle text-[13.5px] text-ink;
   }
 
   .panel {
@@ -168,7 +181,7 @@
   }
 
   .eyebrow {
-    @apply text-[10px] font-semibold tracking-[0.08em] text-ink-muted uppercase;
+    @apply text-[12px] font-semibold text-ink-muted;
   }
 
   .hairline {
@@ -181,7 +194,8 @@
     @apply inline-flex cursor-pointer items-center justify-center gap-1.5
       rounded-control px-2.5 py-1.5 text-[12.5px] leading-4 font-medium whitespace-nowrap
       transition-[background-color,border-color,color,box-shadow] duration-150
-      select-none disabled:pointer-events-none disabled:opacity-45;
+      select-none focus-visible:shadow-[0_0_0_3px_var(--ring)]
+      focus-visible:outline-none disabled:pointer-events-none disabled:opacity-45;
   }
 
   .btn-primary {
@@ -208,8 +222,9 @@
 
   .input {
     @apply w-full rounded-control border border-line bg-surface py-1.5 pr-2.5
-      pl-8 text-[12.5px] text-ink transition-colors placeholder:text-ink-muted
-      focus:border-brand focus:outline-none;
+      pl-8 text-[12.5px] text-ink transition-[background-color,border-color,box-shadow]
+      placeholder:text-ink-muted hover:border-ink-faint/40 focus:border-brand
+      focus:shadow-[0_0_0_3px_var(--ring)] focus:outline-none;
   }
 
   .chip {

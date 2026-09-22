@@ -8,6 +8,7 @@ import {
   typesIn,
 } from '../utils/dropout'
 import { ArrowDownIcon, ArrowUpIcon, SearchIcon, SortIcon } from './Icons'
+import { Menu, MenuItem } from './Menu'
 
 /** Shown on every surface that marks the worst question, so the red tint is
  *  never the only thing saying so. */
@@ -67,9 +68,9 @@ function SortableHeader({ column, sort, onSort }) {
     <button
       type="button"
       onClick={() => onSort(column)}
-      className={`group/sort inline-flex max-w-full cursor-pointer items-center gap-1 rounded-[4px] tracking-[0.06em] uppercase transition-colors hover:text-ink ${
-        column.align === 'right' ? 'flex-row-reverse' : ''
-      } ${active ? 'text-ink' : ''}`}
+      className={`group/sort inline-flex max-w-full cursor-pointer items-center gap-1.5 rounded-[4px] transition-colors hover:text-brand ${
+        active ? 'text-brand' : ''
+      }`}
     >
       <span className="text-left">
         {column.label}
@@ -80,10 +81,10 @@ function SortableHeader({ column, sort, onSort }) {
         )}
       </span>
       <Icon
-        width={11}
-        height={11}
+        width={13}
+        height={13}
         className={`shrink-0 transition-opacity ${
-          active ? 'opacity-100' : 'opacity-0 group-hover/sort:opacity-60'
+          active ? 'text-brand opacity-100' : 'text-ink-faint opacity-70'
         }`}
       />
     </button>
@@ -139,18 +140,17 @@ export default function DropoutInsights({ campaign }) {
   return (
     <section className="card mb-4 overflow-hidden">
       <div className="card-head">
-        <div>
-          <div className="eyebrow">Survey dropout</div>
-          <h2 className="mt-1 text-[15px] font-semibold tracking-tight">
-            Dropout by question
-          </h2>
-          <p className="mt-0.5 text-[12px] text-ink-muted">
-            {n(m.incomplete)} of {n(m.respondents)} respondents left before
-            finishing. Survey average {average.toFixed(1)}% per question, marked
-            on each bar.
-          </p>
-        </div>
+        <h2 className="text-[16px] font-semibold text-ink">Dropout by question</h2>
+        <span aria-live="polite" className="text-[13.5px] text-ink-soft tabnum">
+          Showing {visible.length} of {rows.length}
+        </span>
       </div>
+
+      <p className="border-b border-line px-4 py-3 text-[13px] text-ink-muted sm:px-5">
+        {n(m.incomplete)} of {n(m.respondents)} respondents left before
+        finishing. Survey average {average.toFixed(1)}% per question, marked on
+        each bar.
+      </p>
 
       {/* Filters sit in one row directly above the data they scope */}
       <div className="flex flex-wrap items-center gap-2 border-b border-line bg-surface-2/60 px-4 py-2.5 sm:px-5">
@@ -170,44 +170,53 @@ export default function DropoutInsights({ campaign }) {
           />
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <label htmlFor="filter-type" className="eyebrow">
-            Type
-          </label>
-          <select
-            id="filter-type"
-            className="rounded-control border border-line bg-surface px-2 py-1.5 text-[12.5px] text-ink focus:border-brand focus:outline-none"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="all">All types</option>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {typeLabel(t)}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* The same Menu the header uses, so every control on the page
+            shares one set of chrome and one keyboard contract. */}
+        <Menu
+          label="Filter by question type"
+          heading="Question type"
+          trigger={
+            <span className="font-semibold">
+              {type === 'all' ? 'All types' : typeLabel(type)}
+            </span>
+          }
+        >
+          <MenuItem selected={type === 'all'} onSelect={() => setType('all')}>
+            All types
+          </MenuItem>
+          {types.map((t) => (
+            <MenuItem
+              key={t}
+              selected={type === t}
+              onSelect={() => setType(t)}
+            >
+              {typeLabel(t)}
+            </MenuItem>
+          ))}
+        </Menu>
 
         <div className="flex items-center gap-1.5 xl:hidden">
-          <label htmlFor="sort-questions" className="eyebrow">
-            Sort
-          </label>
-          <select
-            id="sort-questions"
-            className="rounded-control border border-line bg-surface px-2 py-1.5 text-[12.5px] text-ink focus:border-brand focus:outline-none"
-            value={sort.id}
-            onChange={(e) => {
-              const column = COLUMNS.find((c) => c.id === e.target.value)
-              setSort({ id: column.id, dir: column.numeric ? 'desc' : 'asc' })
-            }}
+          <Menu
+            label="Sort questions"
+            heading="Sort by"
+            trigger={
+              <span className="font-semibold">
+                {COLUMNS.find((c) => c.id === sort.id)?.label}
+              </span>
+            }
           >
             {COLUMNS.map((c) => (
-              <option key={c.id} value={c.id}>
+              <MenuItem
+                key={c.id}
+                selected={c.id === sort.id}
+                onSelect={() =>
+                  setSort({ id: c.id, dir: c.numeric ? 'desc' : 'asc' })
+                }
+              >
                 {c.label}
-              </option>
+              </MenuItem>
             ))}
-          </select>
+          </Menu>
           <button
             type="button"
             className="btn btn-secondary btn-icon"
@@ -224,27 +233,22 @@ export default function DropoutInsights({ campaign }) {
           </button>
         </div>
 
-        <div className="ml-auto flex items-center gap-2 text-[11.5px] text-ink-muted">
-          <span aria-live="polite" className="tabnum">
-            {visible.length} of {rows.length} questions
-          </span>
-          {isFiltered && (
-            <button type="button" className="btn btn-ghost px-2 py-1" onClick={reset}>
-              Reset
-            </button>
-          )}
-        </div>
+        {isFiltered && (
+          <button type="button" className="btn btn-secondary ml-auto" onClick={reset}>
+            Reset
+          </button>
+        )}
       </div>
 
       <div className="hidden overflow-x-auto xl:block">
-        <table className="w-full min-w-[1010px] border-collapse text-[12.5px]">
+        <table className="w-full min-w-[1080px] border-collapse text-[13.5px]">
           <caption className="sr-only">
             Dropout by question for {campaign.name}, sorted by{' '}
             {COLUMNS.find((c) => c.id === sort.id)?.label} {sort.dir}ending
           </caption>
 
           <thead>
-            <tr className="border-b border-line bg-surface-2">
+            <tr className="border-b border-line bg-surface">
               {COLUMNS.map((column) => {
                 const active = sort.id === column.id
                 return (
@@ -260,11 +264,11 @@ export default function DropoutInsights({ campaign }) {
                           ? 'none'
                           : undefined
                     }
-                    className={`px-3 py-2 align-bottom text-[10px] leading-tight font-semibold tracking-[0.06em] text-ink-muted uppercase ${
+                    className={`th align-middle ${
                       column.align === 'right' ? 'text-right' : 'text-left'
                     } ${
                       column.id === 'question'
-                        ? 'sticky left-0 z-20 min-w-[270px] bg-surface-2'
+                        ? 'sticky left-0 z-20 min-w-[300px] bg-surface'
                         : ''
                     } ${column.id === 'rate' ? 'min-w-[120px]' : ''} ${
                       column.id === 'gain' ? 'min-w-[124px]' : ''
@@ -310,7 +314,7 @@ export default function DropoutInsights({ campaign }) {
                 >
                   <th
                     scope="row"
-                    className={`sticky left-0 z-10 px-3 py-2.5 text-left align-middle font-normal transition-colors after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-line ${rowBg}`}
+                    className={`td sticky left-0 z-10 text-left font-normal transition-colors after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-line ${rowBg}`}
                   >
                     <div className="flex max-w-[330px] items-baseline gap-2">
                       <span className="text-[10.5px] font-semibold text-ink-muted tabnum">
@@ -325,20 +329,20 @@ export default function DropoutInsights({ campaign }) {
                     )}
                   </th>
 
-                  <td className="px-3 py-2.5 align-middle">
+                  <td className="td">
                     <span className="inline-block rounded-[5px] border border-line bg-surface-2 px-1.5 py-0.5 text-[10.5px] whitespace-nowrap text-ink-soft">
                       {r.typeLabel}
                     </span>
                   </td>
 
-                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                  <td className="td text-right tabnum">
                     {n(r.reached)}
                   </td>
-                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                  <td className="td text-right tabnum">
                     {n(r.dropped)}
                   </td>
 
-                  <td className="px-3 py-2.5 text-right align-middle">
+                  <td className="td text-right">
                     <div className="font-semibold tabnum">{pctText(r.dropoutRate)}</div>
                     {/* Magnitude bar — one hue, a lighter step of it as track */}
                     <div
@@ -357,11 +361,11 @@ export default function DropoutInsights({ campaign }) {
                     </div>
                   </td>
 
-                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                  <td className="td text-right tabnum">
                     {pctText(r.completionRate)}
                   </td>
-                  <td className="px-3 py-2.5 text-right align-middle">
-                    <div className="font-semibold text-brand-ink tabnum">
+                  <td className="td text-right">
+                    <div className="font-semibold text-link tabnum">
                       +{r.completionGainPts.toFixed(1)}%
                     </div>
                     <div className="text-[10.5px] text-ink-muted tabnum">
@@ -369,7 +373,7 @@ export default function DropoutInsights({ campaign }) {
                     </div>
                   </td>
 
-                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                  <td className="td text-right tabnum">
                     {formatDuration(r.avgSeconds)}
                   </td>
                 </tr>
@@ -447,7 +451,7 @@ export default function DropoutInsights({ campaign }) {
                 <div className="col-span-2">
                   <dt className="eyebrow">Potential completion gain</dt>
                   <dd className="mt-0.5 flex flex-wrap items-baseline gap-1.5">
-                    <span className="text-[13px] font-semibold text-brand-ink tabnum">
+                    <span className="text-[13px] font-semibold text-link tabnum">
                       +{r.completionGainPts.toFixed(1)}%
                     </span>
                     <span className="text-[11px] text-ink-muted tabnum">
