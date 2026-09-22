@@ -20,7 +20,7 @@ const TABS = [
   { id: 'reviews', label: 'Reviews', Icon: MessageIcon },
   { id: 'incomplete', label: 'Incomplete Survey', Icon: ChartIcon },
   { id: 'expired', label: 'Expired Survey', Icon: AlertIcon },
-  { id: 'dropout', label: 'Dropout Analysis', Icon: FunnelIcon, current: true },
+  { id: 'dropout', label: 'Survey Dropouts', Icon: FunnelIcon, current: true },
 ]
 
 export default function AnalyticsTabs() {
