@@ -1,16 +1,13 @@
 /**
  * Design tokens and primitives.
  *
- * Every colour is a token on :root, re-declared for dark under both the OS
- * media query and the [data-theme] stamp so an explicit choice wins either
- * way. Tailwind reads them through `@theme inline`, so `bg-surface`,
- * `text-ink-muted` and friends follow the active theme with no dark: variants
- * in the markup.
+ * Every colour is a token on :root. Tailwind reads them through
+ * `@theme inline`, so `bg-surface`, `text-ink-muted` and friends resolve
+ * from the tokens with no per-component colour in the markup.
  *
  * Palette provenance:
- *   series 1/2   validated categorical pair — light ΔE 24.7, dark ΔE 26.8 (CVD)
- *   status       fixed, never themed; ships with a dot + label, never colour alone
- *   dark surface #1a1a19, the surface the dark steps were validated against
+ *   series 1/2   validated categorical pair — ΔE 24.7 (CVD)
+ *   status       fixed; ships with a dot + label, never colour alone
  */
 
 @import 'tailwindcss';
@@ -61,91 +58,6 @@
   --shadow-2: 0 1px 2px rgba(11, 11, 11, 0.05), 0 10px 24px -14px rgba(11, 11, 11, 0.25);
   --shadow-3: 0 12px 32px -10px rgba(11, 11, 11, 0.28), 0 2px 6px rgba(11, 11, 11, 0.06);
   --ring: rgba(42, 120, 214, 0.35);
-}
-
-/* Dark — declared twice on purpose: the media query covers the OS setting,
-   the [data-theme] stamp covers the in-app toggle, and the :not() guard lets
-   an explicit "light" beat OS dark. Keep the two blocks in sync. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-
-    --canvas: #101010;
-    --surface: #1a1a19;
-    --surface-2: #212120;
-    --surface-3: #2a2a28;
-    --line: #32322f;
-    --line-soft: #272725;
-
-    --ink: #ffffff;
-    --ink-soft: #c3c2b7;
-    --ink-muted: #8f8e85;
-    --ink-faint: #7a7972;
-
-    --series-1: #3987e5;
-    --series-2: #d95926;
-
-    --brand: #3987e5;
-    --brand-hover: #5598e7;
-    --brand-ink: #86b6ef;
-    --brand-tint: #16263a;
-    --brand-tint-2: #1c3350;
-    --brand-line: #2b4869;
-    --track: #184f95;
-    --on-brand: #ffffff;
-
-    --good-ink: #3dbd3d;
-    --good-tint: #142414;
-    --warn-ink: #f5c451;
-    --warn-tint: #2a2214;
-    --crit-ink: #e66767;
-    --crit-tint: #2c1818;
-
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.8);
-    --shadow-3: 0 12px 32px -10px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.5);
-    --ring: rgba(57, 135, 229, 0.45);
-  }
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-
-  --canvas: #101010;
-  --surface: #1a1a19;
-  --surface-2: #212120;
-  --surface-3: #2a2a28;
-  --line: #32322f;
-  --line-soft: #272725;
-
-  --ink: #ffffff;
-  --ink-soft: #c3c2b7;
-  --ink-muted: #8f8e85;
-  --ink-faint: #7a7972;
-
-  --series-1: #3987e5;
-  --series-2: #d95926;
-
-  --brand: #3987e5;
-  --brand-hover: #5598e7;
-  --brand-ink: #86b6ef;
-  --brand-tint: #16263a;
-  --brand-tint-2: #1c3350;
-  --brand-line: #2b4869;
-  --track: #184f95;
-  --on-brand: #ffffff;
-
-  --good-ink: #3dbd3d;
-  --good-tint: #142414;
-  --warn-ink: #f5c451;
-  --warn-tint: #2a2214;
-  --crit-ink: #e66767;
-  --crit-tint: #2c1818;
-
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.8);
-  --shadow-3: 0 12px 32px -10px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.5);
-  --ring: rgba(57, 135, 229, 0.45);
 }
 
 @theme inline {
@@ -219,7 +131,7 @@
     border-radius: 4px;
   }
 
-  /* Recessive scrollbars, both themes */
+  /* Recessive scrollbars */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;

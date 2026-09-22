@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <meta
       name="description"
       content="Where survey respondents drop out, and what the ones who answer are saying."
@@ -15,14 +15,6 @@
       rel="stylesheet"
     />
     <title>Survey Dropout &amp; Response Intelligence</title>
-    <script>
-      // Stamp the saved theme before first paint so the page never flashes
-      // the wrong one. No stamp means "follow the OS".
-      try {
-        var t = localStorage.getItem('sdri.theme')
-        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
-      } catch (e) {}
-    </script>
   </head>
   <body>
     <div id="root"></div>

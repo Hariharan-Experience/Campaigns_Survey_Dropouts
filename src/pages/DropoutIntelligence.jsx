@@ -1,7 +1,6 @@
 import DropoutInsights from '../components/DropoutInsights'
 import DropoutTrend from '../components/DropoutTrend'
 import HeadlineMetrics from '../components/HeadlineMetrics'
-import ThemeToggle from '../components/ThemeToggle'
 import {
   CampaignSelector,
   DateFilter,
@@ -42,8 +41,6 @@ export default function DropoutIntelligence() {
             <CampaignSelector />
             <DateFilter />
             <ExportMenu />
-            <span className="mx-0.5 hidden h-5 w-px bg-line sm:block" />
-            <ThemeToggle />
           </div>
         </div>
       </header>
