@@ -134,8 +134,8 @@ export default function DropoutTrend({ campaign }) {
               role="img"
               tabIndex={0}
               aria-label={`Weekly dropout rate. ${series.previousLabel} averaged ${pct(series.previousRate)}, ${series.currentLabel} averaged ${pct(series.currentRate)}. Use the arrow keys to read each week.`}
-              className="touch-none outline-none focus-visible:rounded-control"
-              onMouseLeave={() => setActive(null)}
+              className="touch-pan-y outline-none focus-visible:rounded-control"
+              onPointerLeave={() => setActive(null)}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowRight') { e.preventDefault(); move(1) }
                 if (e.key === 'ArrowLeft') { e.preventDefault(); move(-1) }
@@ -256,7 +256,8 @@ export default function DropoutTrend({ campaign }) {
                   width={innerW / points.length}
                   height={innerH}
                   fill="transparent"
-                  onMouseEnter={() => setActive(i)}
+                  onPointerEnter={() => setActive(i)}
+                  onPointerDown={() => setActive(i)}
                 />
               ))}
 
@@ -325,31 +326,33 @@ export default function DropoutTrend({ campaign }) {
         </div>
 
         {/* The same numbers, for anyone not reading the chart */}
-        <table className="sr-only">
-          <caption>Weekly dropout rate for {campaign.name}</caption>
-          <thead>
-            <tr>
-              <th scope="col">Week starting</th>
-              <th scope="col">Period</th>
-              <th scope="col">Respondents</th>
-              <th scope="col">Dropped</th>
-              <th scope="col">Dropout rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            {points.map((p) => (
-              <tr key={p.weekStart}>
-                <th scope="row">{p.weekStart}</th>
-                <td>
-                  {p.period === 'current' ? series.currentLabel : series.previousLabel}
-                </td>
-                <td>{n(p.respondents)}</td>
-                <td>{n(p.dropped)}</td>
-                <td>{pct(p.dropoutRate)}</td>
+        <div className="sr-only">
+          <table>
+            <caption>Weekly dropout rate for {campaign.name}</caption>
+            <thead>
+              <tr>
+                <th scope="col">Week starting</th>
+                <th scope="col">Period</th>
+                <th scope="col">Respondents</th>
+                <th scope="col">Dropped</th>
+                <th scope="col">Dropout rate</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {points.map((p) => (
+                <tr key={p.weekStart}>
+                  <th scope="row">{p.weekStart}</th>
+                  <td>
+                    {p.period === 'current' ? series.currentLabel : series.previousLabel}
+                  </td>
+                  <td>{n(p.respondents)}</td>
+                  <td>{n(p.dropped)}</td>
+                  <td>{pct(p.dropoutRate)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   )

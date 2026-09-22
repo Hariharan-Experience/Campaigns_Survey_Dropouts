@@ -7,6 +7,26 @@ import {
 } from '../utils/dropout'
 import { ArrowDownIcon, ArrowUpIcon, SearchIcon, SortIcon } from './Icons'
 
+/** Shown on every surface that marks the worst question, so the red tint is
+ *  never the only thing saying so. */
+function WorstBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-crit/25 bg-crit-tint px-1.5 py-0.5 text-[10px] font-semibold whitespace-nowrap text-crit-ink">
+      <span className="size-1.5 rounded-full bg-crit" aria-hidden="true" />
+      Biggest drop-off
+    </span>
+  )
+}
+
+function Field({ label, value }) {
+  return (
+    <div>
+      <dt className="eyebrow">{label}</dt>
+      <dd className="mt-0.5 text-[13px] font-medium tabnum">{value}</dd>
+    </div>
+  )
+}
+
 const n = (v) => v.toLocaleString('en-US')
 const pctText = (v) => `${v.toFixed(1)}%`
 
@@ -141,6 +161,41 @@ export default function DropoutInsights({ campaign }) {
           />
         </div>
 
+        <div className="flex items-center gap-1.5 lg:hidden">
+          <label htmlFor="sort-questions" className="eyebrow">
+            Sort
+          </label>
+          <select
+            id="sort-questions"
+            className="rounded-control border border-line bg-surface px-2 py-1.5 text-[12.5px] text-ink focus:border-brand focus:outline-none"
+            value={sort.id}
+            onChange={(e) => {
+              const column = COLUMNS.find((c) => c.id === e.target.value)
+              setSort({ id: column.id, dir: column.numeric ? 'desc' : 'asc' })
+            }}
+          >
+            {COLUMNS.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-secondary btn-icon"
+            aria-label={`Sorted ${sort.dir === 'asc' ? 'ascending' : 'descending'}. Reverse the order.`}
+            onClick={() =>
+              setSort((c) => ({ ...c, dir: c.dir === 'asc' ? 'desc' : 'asc' }))
+            }
+          >
+            {sort.dir === 'asc' ? (
+              <ArrowUpIcon width={13} height={13} />
+            ) : (
+              <ArrowDownIcon width={13} height={13} />
+            )}
+          </button>
+        </div>
+
         <div className="ml-auto flex items-center gap-2 text-[11.5px] text-ink-muted">
           <span aria-live="polite" className="tabnum">
             {visible.length} of {rows.length} questions
@@ -153,7 +208,7 @@ export default function DropoutInsights({ campaign }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[1010px] border-collapse text-[12.5px]">
           <caption className="sr-only">
             Dropout by question for {campaign.name}, sorted by{' '}
@@ -235,6 +290,11 @@ export default function DropoutInsights({ campaign }) {
                       </span>
                       <span className="leading-snug">{r.text}</span>
                     </div>
+                    {isWorst && (
+                      <div className="mt-1.5 pl-[26px]">
+                        <WorstBadge />
+                      </div>
+                    )}
                   </th>
 
                   <td className="px-3 py-2.5 align-middle">
@@ -290,6 +350,88 @@ export default function DropoutInsights({ campaign }) {
           </tbody>
         </table>
       </div>
+
+      {/* Below lg the table's 1010px minimum would force a horizontal scroll
+          that pushes every metric off a phone screen, so the same rows are
+          dealt out as cards. Identical data, one column. */}
+      <ul className="divide-y divide-line-soft lg:hidden">
+        {visible.length === 0 && (
+          <li className="px-4 py-10 text-center">
+            <p className="text-[13px] font-semibold">No questions match</p>
+            <p className="mt-1 text-[12px] text-ink-muted">
+              No question in this campaign matches that search.
+            </p>
+            <button type="button" className="btn btn-secondary mt-3" onClick={reset}>
+              Clear search
+            </button>
+          </li>
+        )}
+
+        {visible.map((r) => {
+          const isWorst = r.id === worst.id
+          return (
+            <li
+              key={r.id}
+              className={`px-4 py-3.5 ${isWorst ? 'bg-crit-tint/50' : ''}`}
+            >
+              <div className="flex items-start gap-2">
+                <span className="mt-px shrink-0 text-[10.5px] font-semibold text-ink-muted tabnum">
+                  Q{r.order}
+                </span>
+                <p className="flex-1 text-[13px] leading-snug">{r.text}</p>
+              </div>
+
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-[26px]">
+                <span className="inline-block rounded-[5px] border border-line bg-surface-2 px-1.5 py-0.5 text-[10.5px] whitespace-nowrap text-ink-soft">
+                  {r.typeLabel}
+                </span>
+                {isWorst && <WorstBadge />}
+              </div>
+
+              {/* Dropout rate leads the card — it is what the panel is about */}
+              <div className="mt-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="eyebrow">Dropout rate</span>
+                  <span className="text-[15px] leading-none font-semibold tabnum">
+                    {pctText(r.dropoutRate)}
+                  </span>
+                </div>
+                <div
+                  className="relative mt-1.5 h-1.5 w-full overflow-hidden rounded-sm bg-track"
+                  aria-hidden="true"
+                >
+                  <div
+                    className="h-1.5 rounded-sm bg-series-1"
+                    style={{ width: `${(r.dropoutRate / maxRate) * 100}%` }}
+                  />
+                  <span
+                    className="absolute inset-y-0 w-px bg-ink-faint"
+                    style={{ left: `${(average / maxRate) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
+                <Field label="Reached" value={n(r.reached)} />
+                <Field label="Dropped" value={n(r.dropped)} />
+                <Field label="Completion rate" value={pctText(r.completionRate)} />
+                <Field label="Avg. time" value={formatDuration(r.avgSeconds)} />
+                <div className="col-span-2">
+                  <dt className="eyebrow">Potential completion gain</dt>
+                  <dd className="mt-0.5 flex flex-wrap items-baseline gap-1.5">
+                    <span className="text-[13px] font-semibold text-brand-ink tabnum">
+                      +{r.completionGainPts.toFixed(1)}%
+                    </span>
+                    <span className="text-[11px] text-ink-muted tabnum">
+                      → {r.projectedCompletionRate.toFixed(1)}% completion
+                    </span>
+                  </dd>
+                </div>
+              </dl>
+            </li>
+          )
+        })}
+      </ul>
 
       <p className="border-t border-line px-4 py-2.5 text-[11px] text-ink-muted sm:px-5">
         Potential completion gain is a theoretical upper bound: it assumes
