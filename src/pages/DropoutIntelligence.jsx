@@ -1,11 +1,7 @@
 import DropoutInsights from '../components/DropoutInsights'
 import DropoutTrend from '../components/DropoutTrend'
 import HeadlineMetrics from '../components/HeadlineMetrics'
-import {
-  CampaignSelector,
-  DateFilter,
-  ExportMenu,
-} from '../components/HeaderControls'
+import { DateFilter, ExportMenu } from '../components/HeaderControls'
 import { FunnelIcon } from '../components/Icons'
 import { useApp } from '../context/AppContext'
 
@@ -38,7 +34,6 @@ export default function DropoutIntelligence() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <CampaignSelector />
             <DateFilter />
             <ExportMenu />
           </div>
@@ -46,17 +41,6 @@ export default function DropoutIntelligence() {
       </header>
 
       <main id="main" className="mx-auto max-w-[1560px] px-4 py-5 sm:px-6">
-        <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-[17px] font-semibold tracking-tight">
-              {campaign.name}
-            </h2>
-          </div>
-          <p className="mt-1 max-w-[80ch] text-[12px] text-ink-muted">
-            {campaign.audience}
-          </p>
-        </div>
-
         <HeadlineMetrics campaign={campaign} />
 
         <DropoutTrend campaign={campaign} />

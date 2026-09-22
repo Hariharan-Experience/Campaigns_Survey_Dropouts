@@ -39,7 +39,6 @@ const pctText = (v) => `${v.toFixed(1)}%`
 const COLUMNS = [
   { id: 'question', label: 'Survey question', sort: (r) => r.order },
   { id: 'type', label: 'Type', sort: (r) => r.typeLabel },
-  { id: 'source', label: 'Survey source', sort: (r) => r.sourceLabel },
   { id: 'reached', label: 'Reached', align: 'right', numeric: true, sort: (r) => r.reached },
   { id: 'dropped', label: 'Dropped', align: 'right', numeric: true, sort: (r) => r.dropped },
   { id: 'rate', label: 'Dropout rate', align: 'right', numeric: true, sort: (r) => r.dropoutRate },
@@ -332,10 +331,6 @@ export default function DropoutInsights({ campaign }) {
                     </span>
                   </td>
 
-                  <td className="px-3 py-2.5 align-middle whitespace-nowrap text-ink-soft">
-                    {r.sourceLabel}
-                  </td>
-
                   <td className="px-3 py-2.5 text-right align-middle tabnum">
                     {n(r.reached)}
                   </td>
@@ -419,9 +414,6 @@ export default function DropoutInsights({ campaign }) {
                   {r.typeLabel}
                 </span>
                 {isWorst && <WorstBadge />}
-                <span className="text-[10.5px] text-ink-muted">
-                  via {r.sourceLabel}
-                </span>
               </div>
 
               {/* Dropout rate leads the card — it is what the panel is about */}

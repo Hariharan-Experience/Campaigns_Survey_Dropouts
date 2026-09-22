@@ -31,22 +31,6 @@ const TYPE_LABELS = {
 
 export const typeLabel = (type) => TYPE_LABELS[type] ?? type
 
-/** How the respondents for a question were loaded into the campaign. */
-const SOURCE_LABELS = {
-  manual_upload: 'Manual upload',
-  followup: 'Follow-up',
-  sftp: 'SFTP',
-}
-
-export const sourceLabel = (source) => SOURCE_LABELS[source] ?? source
-
-/** The sources actually present, in the order the questions use them. */
-export function sourcesIn(rows) {
-  const seen = []
-  for (const r of rows) if (r.source && !seen.includes(r.source)) seen.push(r.source)
-  return seen
-}
-
 /** The question types actually present, in survey order. */
 export function typesIn(rows) {
   const seen = []
@@ -88,8 +72,6 @@ export function buildDropoutRows(campaign) {
       text: q.text,
       type: q.type,
       typeLabel: typeLabel(q.type),
-      source: q.source,
-      sourceLabel: sourceLabel(q.source),
 
       reached: cur.reached,
       dropped: cur.dropped,
