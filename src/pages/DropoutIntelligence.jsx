@@ -1,5 +1,4 @@
 import DropoutInsights from '../components/DropoutInsights'
-import DropoutTrend from '../components/DropoutTrend'
 import HeadlineMetrics from '../components/HeadlineMetrics'
 import { DateFilter, ExportMenu } from '../components/HeaderControls'
 import { FunnelIcon } from '../components/Icons'
@@ -42,8 +41,6 @@ export default function DropoutIntelligence() {
 
       <main id="main" className="mx-auto max-w-[1560px] px-4 py-5 sm:px-6">
         <HeadlineMetrics campaign={campaign} />
-
-        <DropoutTrend campaign={campaign} />
 
         <DropoutInsights campaign={campaign} />
       </main>
