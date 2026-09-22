@@ -1,48 +1,75 @@
 import DropoutInsights from '../components/DropoutInsights'
-import ResponseIntelligence from '../components/ResponseIntelligence'
+import DropoutTrend from '../components/DropoutTrend'
+import HeadlineMetrics from '../components/HeadlineMetrics'
+import ThemeToggle from '../components/ThemeToggle'
 import {
   CampaignSelector,
   DateFilter,
   ExportMenu,
 } from '../components/HeaderControls'
+import { FunnelIcon } from '../components/Icons'
 import { useApp } from '../context/AppContext'
-import { formatRange } from '../utils/dateFilter'
-
-const n = (v) => v.toLocaleString('en-US')
 
 export default function DropoutIntelligence() {
-  const { campaign, range, scopedResponses, selectedId, toggleSelected } =
-    useApp()
-  const m = campaign.metrics.current
+  const { campaign } = useApp()
 
   return (
-    <div className="container-xxl py-4">
-      <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-        <div>
-          <h1 className="h4 mb-1">Survey Dropout &amp; Response Intelligence</h1>
-          <p className="text-muted small mb-0">
-            {campaign.name} · {n(m.incomplete)} incomplete of{' '}
-            {n(m.respondents)} · responses filtered to {formatRange(range)}
+    <div className="min-h-screen">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-surface focus:px-3 focus:py-2 focus:shadow-e3"
+      >
+        Skip to content
+      </a>
+
+      <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1560px] flex-wrap items-center justify-between gap-x-4 gap-y-2.5 px-4 py-2.5 sm:px-6">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="grid size-7 shrink-0 place-items-center rounded-[7px] bg-brand text-on-brand">
+              <FunnelIcon width={15} height={15} />
+            </span>
+            <div className="min-w-0">
+              <h1 className="truncate text-[13.5px] leading-tight font-semibold">
+                Survey Dropout &amp; Response Intelligence
+              </h1>
+              <p className="truncate text-[11.5px] text-ink-muted">
+                {campaign.owner} · {campaign.industry}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <CampaignSelector />
+            <DateFilter />
+            <ExportMenu />
+            <span className="mx-0.5 hidden h-5 w-px bg-line sm:block" />
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      <main id="main" className="mx-auto max-w-[1560px] px-4 py-5 sm:px-6">
+        <div className="mb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[17px] font-semibold tracking-tight">
+              {campaign.name}
+            </h2>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] font-semibold text-ink-soft">
+              <span className="size-1.5 rounded-full bg-good" aria-hidden="true" />
+              {campaign.status}
+            </span>
+          </div>
+          <p className="mt-1 max-w-[80ch] text-[12px] text-ink-muted">
+            {campaign.audience}
           </p>
         </div>
-        <div className="d-flex flex-wrap align-items-center gap-2">
-          <CampaignSelector />
-          <DateFilter />
-          <ExportMenu />
-        </div>
-      </div>
 
-      <DropoutInsights
-        campaign={campaign}
-        selectedQuestionId={selectedId}
-        onAnalyze={(row) => toggleSelected(row.id)}
-      />
+        <HeadlineMetrics campaign={campaign} />
 
-      <ResponseIntelligence
-        campaign={campaign}
-        responses={scopedResponses}
-        range={range}
-      />
+        <DropoutTrend campaign={campaign} />
+
+        <DropoutInsights campaign={campaign} />
+      </main>
     </div>
   )
 }

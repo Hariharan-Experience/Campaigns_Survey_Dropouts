@@ -1,132 +1,301 @@
-import { buildDropoutRows, worstRow, statusCounts, formatDuration, STATUS } from '../utils/dropout'
-import QuestionAnalysis from './QuestionAnalysis'
+import { useMemo, useState } from 'react'
+import {
+  averageDropoutRate,
+  buildDropoutRows,
+  worstRow,
+  formatDuration,
+} from '../utils/dropout'
+import { ArrowDownIcon, ArrowUpIcon, SearchIcon, SortIcon } from './Icons'
 
 const n = (v) => v.toLocaleString('en-US')
 const pctText = (v) => `${v.toFixed(1)}%`
 
-export function StatusPill({ status }) {
+/**
+ * Columns are declared once: header text, alignment, and the value each one
+ * sorts on. Numeric columns open descending — the interesting end first.
+ */
+const COLUMNS = [
+  { id: 'question', label: 'Survey question', sort: (r) => r.order },
+  { id: 'type', label: 'Type', sort: (r) => r.typeLabel },
+  { id: 'reached', label: 'Reached', align: 'right', numeric: true, sort: (r) => r.reached },
+  { id: 'dropped', label: 'Dropped', align: 'right', numeric: true, sort: (r) => r.dropped },
+  { id: 'rate', label: 'Dropout rate', align: 'right', numeric: true, sort: (r) => r.dropoutRate },
+  {
+    id: 'completion',
+    label: 'Completion rate',
+    align: 'right',
+    numeric: true,
+    sort: (r) => r.completionRate,
+  },
+  {
+    id: 'gain',
+    label: 'Potential completion gain',
+    align: 'right',
+    numeric: true,
+    sort: (r) => r.completionGainPts,
+  },
+  { id: 'time', label: 'Avg. time', align: 'right', numeric: true, sort: (r) => r.avgSeconds },
+]
+
+function SortableHeader({ column, sort, onSort }) {
+  const active = sort.id === column.id
+  const Icon = !active ? SortIcon : sort.dir === 'asc' ? ArrowUpIcon : ArrowDownIcon
+
   return (
-    <span className={`status-pill status-${status.id}`}>
-      <span className="status-dot" aria-hidden="true" />
-      {status.label}
-    </span>
+    <button
+      type="button"
+      onClick={() => onSort(column)}
+      className={`group/sort inline-flex max-w-full cursor-pointer items-center gap-1 rounded-[4px] tracking-[0.06em] uppercase transition-colors hover:text-ink ${
+        column.align === 'right' ? 'flex-row-reverse' : ''
+      } ${active ? 'text-ink' : ''}`}
+    >
+      <span className="text-left">
+        {column.label}
+        {column.note && (
+          <span className="block text-[9.5px] font-medium tracking-normal normal-case opacity-80">
+            {column.note}
+          </span>
+        )}
+      </span>
+      <Icon
+        width={11}
+        height={11}
+        className={`shrink-0 transition-opacity ${
+          active ? 'opacity-100' : 'opacity-0 group-hover/sort:opacity-60'
+        }`}
+      />
+    </button>
   )
 }
 
-export default function DropoutInsights({ campaign, selectedQuestionId, onAnalyze }) {
-  const rows = buildDropoutRows(campaign)
+export default function DropoutInsights({ campaign }) {
+  const [sort, setSort] = useState({ id: 'question', dir: 'asc' })
+  const [query, setQuery] = useState('')
+
+  const rows = useMemo(() => buildDropoutRows(campaign), [campaign])
   const worst = worstRow(rows)
-  const counts = statusCounts(rows)
   const m = campaign.metrics.current
+  const maxRate = Math.max(...rows.map((r) => r.dropoutRate))
+  const average = averageDropoutRate(rows)
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const filtered = rows.filter(
+      (r) => !q || r.text.toLowerCase().includes(q) || `q${r.order}`.includes(q),
+    )
+
+    const column = COLUMNS.find((c) => c.id === sort.id)
+    if (!column?.sort) return filtered
+
+    const dir = sort.dir === 'asc' ? 1 : -1
+    return [...filtered].sort((a, b) => {
+      const av = column.sort(a)
+      const bv = column.sort(b)
+      if (av === bv) return a.order - b.order
+      return (av > bv ? 1 : -1) * dir
+    })
+  }, [rows, query, sort])
+
+  const onSort = (column) => {
+    setSort((cur) =>
+      cur.id === column.id
+        ? { id: column.id, dir: cur.dir === 'asc' ? 'desc' : 'asc' }
+        : { id: column.id, dir: column.numeric ? 'desc' : 'asc' },
+    )
+  }
+
+  const isFiltered = query.trim() !== ''
+  const reset = () => setQuery('')
 
   return (
-    <section className="card shadow-sm mb-4">
-      <div className="card-body">
-        <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
-          <div>
-            <h2 className="h5 mb-1">Survey Dropout</h2>
-            <p className="text-primary fw-semibold small mb-1">
-              Where are respondents dropping out?
-            </p>
-            <p className="text-muted small mb-0">
-              {n(m.incomplete)} of {n(m.respondents)} respondents left before
-              finishing · compared with {campaign.period.previous.label}
-            </p>
-          </div>
-          <div className="d-flex align-items-center gap-3 flex-shrink-0">
-            {[STATUS.healthy, STATUS.watch, STATUS.high].map((s) => (
-              <span key={s.id} className="d-flex align-items-center gap-2">
-                <StatusPill status={s} />
-                <span className="fw-semibold tabnum">{counts[s.id] ?? 0}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="table-responsive">
-          <table className="table table-hover align-middle dropout-table mb-0">
-            <caption className="visually-hidden">
-              Dropout by question for {campaign.name}
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" className="col-question">Survey Question</th>
-                <th scope="col">Type</th>
-                <th scope="col" className="text-end">Respondents Reached</th>
-                <th scope="col" className="text-end">Respondents Dropped</th>
-                <th scope="col" className="text-end">Dropout Rate</th>
-                <th scope="col" className="text-end">
-                  Completion Rate<span className="th-note">cumulative</span>
-                </th>
-                <th scope="col" className="text-end">
-                  Potential Completion Gain
-                  <span className="th-note">estimated upper bound</span>
-                </th>
-                <th scope="col" className="text-end">Avg. Answer Time</th>
-                <th scope="col">Status</th>
-                <th scope="col"><span className="visually-hidden">Analyze</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const isOpen = r.id === selectedQuestionId
-                return [
-                  <tr
-                    key={r.id}
-                    className={[
-                      r.id === worst.id ? 'row-worst' : '',
-                      isOpen ? 'table-primary' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    <th scope="row" className="col-question fw-normal">
-                      <span className="text-muted small me-2 tabnum">Q{r.order}</span>
-                      <span className="q-text">{r.text}</span>
-                    </th>
-                    <td>
-                      <span className="badge text-secondary-emphasis bg-body-secondary border fw-normal">
-                        {r.typeLabel}
-                      </span>
-                    </td>
-                    <td className="text-end tabnum">{n(r.reached)}</td>
-                    <td className="text-end tabnum">{n(r.dropped)}</td>
-                    <td className="text-end tabnum fw-semibold">{pctText(r.dropoutRate)}</td>
-                    <td className="text-end tabnum">{pctText(r.completionRate)}</td>
-                    <td className="text-end tabnum fw-semibold text-primary">
-                      Up to +{r.dropoutRate.toFixed(1)} pts
-                    </td>
-                    <td className="text-end tabnum">{formatDuration(r.avgSeconds)}</td>
-                    <td><StatusPill status={r.status} /></td>
-                    <td className="text-end">
-                      <button
-                        type="button"
-                        className={
-                          isOpen
-                            ? 'btn btn-primary btn-sm'
-                            : 'btn btn-outline-primary btn-sm'
-                        }
-                        onClick={() => onAnalyze?.(r)}
-                        aria-expanded={isOpen}
-                      >
-                        {isOpen ? 'Close' : 'Analyze'}
-                      </button>
-                    </td>
-                  </tr>,
-
-                  isOpen && (
-                    <tr key={`${r.id}-drawer`}>
-                      <td colSpan={10} className="p-0 border-bottom">
-                        <QuestionAnalysis campaign={campaign} row={r} allRows={rows} />
-                      </td>
-                    </tr>
-                  ),
-                ]
-              })}
-            </tbody>
-          </table>
+    <section className="card mb-4 overflow-hidden">
+      <div className="card-head">
+        <div>
+          <div className="eyebrow">Survey dropout</div>
+          <h2 className="mt-1 text-[15px] font-semibold tracking-tight">
+            Where are respondents dropping out?
+          </h2>
+          <p className="mt-0.5 text-[12px] text-ink-muted">
+            {n(m.incomplete)} of {n(m.respondents)} respondents left before
+            finishing · compared with {campaign.period.previous.label} · survey
+            average {average.toFixed(1)}% per question, marked on every bar
+          </p>
         </div>
       </div>
+
+      {/* Filters sit in one row directly above the data they scope */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-line bg-surface-2/60 px-4 py-2.5 sm:px-5">
+        <div className="relative w-full sm:w-60">
+          <SearchIcon
+            width={14}
+            height={14}
+            className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-ink-muted"
+          />
+          <input
+            type="search"
+            className="input"
+            placeholder="Filter questions…"
+            aria-label="Filter questions by text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="ml-auto flex items-center gap-2 text-[11.5px] text-ink-muted">
+          <span aria-live="polite" className="tabnum">
+            {visible.length} of {rows.length} questions
+          </span>
+          {isFiltered && (
+            <button type="button" className="btn btn-ghost px-2 py-1" onClick={reset}>
+              Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[1010px] border-collapse text-[12.5px]">
+          <caption className="sr-only">
+            Dropout by question for {campaign.name}, sorted by{' '}
+            {COLUMNS.find((c) => c.id === sort.id)?.label} {sort.dir}ending
+          </caption>
+
+          <thead>
+            <tr className="border-b border-line bg-surface-2">
+              {COLUMNS.map((column) => {
+                const active = sort.id === column.id
+                return (
+                  <th
+                    key={column.id}
+                    scope="col"
+                    aria-sort={
+                      active
+                        ? sort.dir === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : column.sort
+                          ? 'none'
+                          : undefined
+                    }
+                    className={`px-3 py-2 align-bottom text-[10px] leading-tight font-semibold tracking-[0.06em] text-ink-muted uppercase ${
+                      column.align === 'right' ? 'text-right' : 'text-left'
+                    } ${
+                      column.id === 'question'
+                        ? 'sticky left-0 z-20 min-w-[270px] bg-surface-2'
+                        : ''
+                    } ${column.id === 'rate' ? 'min-w-[120px]' : ''} ${
+                      column.id === 'gain' ? 'min-w-[124px]' : ''
+                    }`}
+                  >
+                    <SortableHeader column={column} sort={sort} onSort={onSort} />
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+
+          <tbody>
+            {visible.length === 0 && (
+              <tr>
+                <td colSpan={COLUMNS.length} className="px-4 py-10 text-center">
+                  <p className="text-[13px] font-semibold">No questions match</p>
+                  <p className="mt-1 text-[12px] text-ink-muted">
+                    No question in this campaign matches that search.
+                  </p>
+                  <button type="button" className="btn btn-secondary mt-3" onClick={reset}>
+                    Clear search
+                  </button>
+                </td>
+              </tr>
+            )}
+
+            {visible.map((r) => {
+              const isWorst = r.id === worst.id
+
+              // The sticky first cell carries the row's own background, or it
+              // would go transparent over the scrolled content beneath it.
+              const rowBg = isWorst
+                ? 'bg-crit-tint/60 group-hover:bg-crit-tint'
+                : 'bg-surface group-hover:bg-surface-2'
+
+              return (
+                <tr
+                  key={r.id}
+                  className={`group border-b border-line-soft transition-colors ${
+                    isWorst ? 'bg-crit-tint/60 hover:bg-crit-tint' : 'hover:bg-surface-2'
+                  }`}
+                >
+                  <th
+                    scope="row"
+                    className={`sticky left-0 z-10 px-3 py-2.5 text-left align-middle font-normal transition-colors after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-line ${rowBg}`}
+                  >
+                    <div className="flex max-w-[330px] items-baseline gap-2">
+                      <span className="text-[10.5px] font-semibold text-ink-muted tabnum">
+                        Q{r.order}
+                      </span>
+                      <span className="leading-snug">{r.text}</span>
+                    </div>
+                  </th>
+
+                  <td className="px-3 py-2.5 align-middle">
+                    <span className="inline-block rounded-[5px] border border-line bg-surface-2 px-1.5 py-0.5 text-[10.5px] whitespace-nowrap text-ink-soft">
+                      {r.typeLabel}
+                    </span>
+                  </td>
+
+                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                    {n(r.reached)}
+                  </td>
+                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                    {n(r.dropped)}
+                  </td>
+
+                  <td className="px-3 py-2.5 text-right align-middle">
+                    <div className="font-semibold tabnum">{pctText(r.dropoutRate)}</div>
+                    {/* Magnitude bar — one hue, a lighter step of it as track */}
+                    <div
+                      className="relative mt-1 ml-auto h-1 w-20 overflow-hidden rounded-sm bg-track"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="h-1 rounded-sm bg-series-1"
+                        style={{ width: `${(r.dropoutRate / maxRate) * 100}%` }}
+                      />
+                      {/* Survey average, so every row reads against the baseline */}
+                      <span
+                        className="absolute inset-y-0 w-px bg-ink-faint"
+                        style={{ left: `${(average / maxRate) * 100}%` }}
+                      />
+                    </div>
+                  </td>
+
+                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                    {pctText(r.completionRate)}
+                  </td>
+                  <td className="px-3 py-2.5 text-right align-middle">
+                    <div className="font-semibold text-brand-ink tabnum">
+                      +{r.completionGainPts.toFixed(1)}%
+                    </div>
+                    <div className="text-[10.5px] text-ink-muted tabnum">
+                      → {r.projectedCompletionRate.toFixed(1)}%
+                    </div>
+                  </td>
+
+                  <td className="px-3 py-2.5 text-right align-middle tabnum">
+                    {formatDuration(r.avgSeconds)}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="border-t border-line px-4 py-2.5 text-[11px] text-ink-muted sm:px-5">
+        Potential completion gain is a theoretical upper bound: it assumes
+        nobody drops at that question and every other question behaves exactly
+        as it does today. It is a ceiling on the opportunity, not a forecast.
+      </p>
     </section>
   )
 }

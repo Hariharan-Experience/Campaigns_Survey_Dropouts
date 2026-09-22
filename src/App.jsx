@@ -1,4 +1,6 @@
 import DropoutIntelligence from './pages/DropoutIntelligence'
+import ErrorBoundary from './components/ErrorBoundary'
+import { ToastProvider } from './components/Toast'
 import { AppProvider } from './context/AppContext'
 
 // Single-screen prototype: the Survey Dropout & Response Intelligence
@@ -6,8 +8,12 @@ import { AppProvider } from './context/AppContext'
 // on disk but are no longer routed or bundled.
 export default function App() {
   return (
-    <AppProvider>
-      <DropoutIntelligence />
-    </AppProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <AppProvider>
+          <DropoutIntelligence />
+        </AppProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }

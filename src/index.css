@@ -1,195 +1,414 @@
 /**
- * Bootstrap 5 carries the layout, table, buttons, badges and dropdowns.
- * This file holds only the tokens and the handful of marks Bootstrap has no
- * class for: the status palette, the theme bars and the sentiment bar.
+ * Design tokens and primitives.
+ *
+ * Every colour is a token on :root, re-declared for dark under both the OS
+ * media query and the [data-theme] stamp so an explicit choice wins either
+ * way. Tailwind reads them through `@theme inline`, so `bg-surface`,
+ * `text-ink-muted` and friends follow the active theme with no dark: variants
+ * in the markup.
+ *
+ * Palette provenance:
+ *   series 1/2   validated categorical pair — light ΔE 24.7, dark ΔE 26.8 (CVD)
+ *   status       fixed, never themed; ships with a dot + label, never colour alone
+ *   dark surface #1a1a19, the surface the dark steps were validated against
  */
 
-:root {
-  --ink: #0b0b0b;
-  --ink-secondary: #52514e;
-  --ink-muted: #898781;
-  --grid: #e1e0d9;
+@import 'tailwindcss';
 
-  /* Validated categorical pair (CVD ΔE 24.7) */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --canvas: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --surface-3: #eef0f4;
+  --line: #e2e5ea;
+  --line-soft: #edeff3;
+
+  /* Ink — muted clears 4.5:1 on the surface, so labels stay legible */
+  --ink: #0b0b0b;
+  --ink-soft: #52514e;
+  --ink-muted: #6b6a64;
+  --ink-faint: #898781;
+
+  /* Categorical pair (identity, never status) */
   --series-1: #2a78d6;
   --series-2: #eb6834;
 
-  /* Validated ordinal blue ramp */
-  --ordinal-2: #5598e7;
+  /* Brand chrome + ordinal blue ramp */
+  --brand: #2a78d6;
+  --brand-hover: #1f63b4;
+  --brand-ink: #184f95;
+  --brand-tint: #eaf2fd;
+  --brand-tint-2: #dbeafd;
+  --brand-line: #c7defa;
+  --track: #cde2fb;
+  --on-brand: #ffffff;
 
-  /* Reserved status palette — never reused for series colour */
+  /* Fixed status palette */
   --good: #0ca30c;
   --good-ink: #006300;
+  --good-tint: #e9f6e9;
   --warn: #fab219;
   --warn-ink: #8a5a00;
+  --warn-tint: #fdf3e0;
   --crit: #d03b3b;
   --crit-ink: #b02f2e;
+  --crit-tint: #fbebeb;
+
+  --shadow-1: 0 1px 2px rgba(11, 11, 11, 0.05);
+  --shadow-2: 0 1px 2px rgba(11, 11, 11, 0.05), 0 10px 24px -14px rgba(11, 11, 11, 0.25);
+  --shadow-3: 0 12px 32px -10px rgba(11, 11, 11, 0.28), 0 2px 6px rgba(11, 11, 11, 0.06);
+  --ring: rgba(42, 120, 214, 0.35);
 }
 
-body {
-  background: #f4f6f8;
-  color: var(--ink);
-  font-size: 14px;
+/* Dark — declared twice on purpose: the media query covers the OS setting,
+   the [data-theme] stamp covers the in-app toggle, and the :not() guard lets
+   an explicit "light" beat OS dark. Keep the two blocks in sync. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --canvas: #101010;
+    --surface: #1a1a19;
+    --surface-2: #212120;
+    --surface-3: #2a2a28;
+    --line: #32322f;
+    --line-soft: #272725;
+
+    --ink: #ffffff;
+    --ink-soft: #c3c2b7;
+    --ink-muted: #8f8e85;
+    --ink-faint: #7a7972;
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+
+    --brand: #3987e5;
+    --brand-hover: #5598e7;
+    --brand-ink: #86b6ef;
+    --brand-tint: #16263a;
+    --brand-tint-2: #1c3350;
+    --brand-line: #2b4869;
+    --track: #184f95;
+    --on-brand: #ffffff;
+
+    --good-ink: #3dbd3d;
+    --good-tint: #142414;
+    --warn-ink: #f5c451;
+    --warn-tint: #2a2214;
+    --crit-ink: #e66767;
+    --crit-tint: #2c1818;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.8);
+    --shadow-3: 0 12px 32px -10px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.5);
+    --ring: rgba(57, 135, 229, 0.45);
+  }
 }
 
-/* ---------- Status pill: dot + label, never colour alone ---------- */
+:root[data-theme='dark'] {
+  color-scheme: dark;
 
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 11.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  padding: 0.15rem 0.5rem 0.15rem 0.4rem;
-  border-radius: 999px;
-}
+  --canvas: #101010;
+  --surface: #1a1a19;
+  --surface-2: #212120;
+  --surface-3: #2a2a28;
+  --line: #32322f;
+  --line-soft: #272725;
 
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+  --ink: #ffffff;
+  --ink-soft: #c3c2b7;
+  --ink-muted: #8f8e85;
+  --ink-faint: #7a7972;
 
-.status-healthy {
-  color: var(--good-ink);
-  background: rgba(12, 163, 12, 0.09);
-}
-.status-healthy .status-dot {
-  background: var(--good);
-}
+  --series-1: #3987e5;
+  --series-2: #d95926;
 
-.status-watch {
-  color: var(--warn-ink);
-  background: rgba(250, 178, 25, 0.16);
-}
-.status-watch .status-dot {
-  background: var(--warn);
-}
+  --brand: #3987e5;
+  --brand-hover: #5598e7;
+  --brand-ink: #86b6ef;
+  --brand-tint: #16263a;
+  --brand-tint-2: #1c3350;
+  --brand-line: #2b4869;
+  --track: #184f95;
+  --on-brand: #ffffff;
 
-.status-high {
-  color: var(--crit-ink);
-  background: rgba(208, 59, 59, 0.1);
-}
-.status-high .status-dot {
-  background: var(--crit);
+  --good-ink: #3dbd3d;
+  --good-tint: #142414;
+  --warn-ink: #f5c451;
+  --warn-tint: #2a2214;
+  --crit-ink: #e66767;
+  --crit-tint: #2c1818;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 24px -14px rgba(0, 0, 0, 0.8);
+  --shadow-3: 0 12px 32px -10px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.5);
+  --ring: rgba(57, 135, 229, 0.45);
 }
 
-/* Severity dots for contributors */
-.sev-high {
-  background: var(--crit);
-}
-.sev-medium {
-  background: var(--warn);
-}
-.sev-low {
-  background: var(--ink-muted);
-}
+@theme inline {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
 
-/* ---------- Table tuning Bootstrap does not cover ---------- */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
 
-.dropout-table {
-  font-size: 12.5px;
-}
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
 
-.dropout-table thead th {
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--ink-muted);
-  line-height: 1.25;
-  vertical-align: bottom;
-  white-space: normal;
-}
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
 
-.dropout-table thead th.text-end {
-  max-width: 112px;
-  /* Wrap between words, never inside one. */
-  overflow-wrap: normal;
-  word-break: keep-all;
-}
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-tint-2: var(--brand-tint-2);
+  --color-brand-line: var(--brand-line);
+  --color-track: var(--track);
+  --color-on-brand: var(--on-brand);
 
-.th-note {
-  display: block;
-  font-size: 9.5px;
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: 0;
-  opacity: 0.8;
-}
+  --color-good: var(--good);
+  --color-good-ink: var(--good-ink);
+  --color-good-tint: var(--good-tint);
+  --color-warn: var(--warn);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-tint: var(--warn-tint);
+  --color-crit: var(--crit);
+  --color-crit-ink: var(--crit-ink);
+  --color-crit-tint: var(--crit-tint);
 
-.col-question {
-  min-width: 230px;
-  max-width: 300px;
+  --radius-card: 10px;
+  --radius-control: 7px;
+
+  --shadow-e1: var(--shadow-1);
+  --shadow-e2: var(--shadow-2);
+  --shadow-e3: var(--shadow-3);
 }
 
-.q-text {
-  line-height: 1.4;
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Recessive scrollbars, both themes */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--ink-faint) 38%, transparent);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--ink-faint) 60%, transparent);
+    background-clip: padding-box;
+  }
 }
 
-.tabnum {
-  font-variant-numeric: tabular-nums;
+@layer components {
+  /* ---------- Surfaces ---------- */
+
+  .card {
+    @apply rounded-card border border-line bg-surface shadow-e1;
+  }
+
+  .card-head {
+    @apply flex flex-wrap items-start justify-between gap-x-6 gap-y-3
+      border-b border-line px-4 py-3.5 sm:px-5;
+  }
+
+  .panel {
+    @apply rounded-control border border-line bg-surface;
+  }
+
+  .eyebrow {
+    @apply text-[10px] font-semibold tracking-[0.08em] text-ink-muted uppercase;
+  }
+
+  .hairline {
+    @apply border-t border-line;
+  }
+
+  /* ---------- Controls ---------- */
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-1.5
+      rounded-control px-2.5 py-1.5 text-[12.5px] leading-4 font-medium whitespace-nowrap
+      transition-[background-color,border-color,color,box-shadow] duration-150
+      select-none disabled:pointer-events-none disabled:opacity-45;
+  }
+
+  .btn-primary {
+    @apply bg-brand text-on-brand shadow-e1 hover:bg-brand-hover
+      active:translate-y-px;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-surface text-ink shadow-e1
+      hover:border-ink-faint/40 hover:bg-surface-2 active:translate-y-px;
+  }
+
+  .btn-ghost {
+    @apply text-ink-soft hover:bg-surface-2 hover:text-ink;
+  }
+
+  .btn-on {
+    @apply border border-brand-line bg-brand-tint text-brand-ink;
+  }
+
+  .btn-icon {
+    @apply size-7 shrink-0 p-0;
+  }
+
+  .input {
+    @apply w-full rounded-control border border-line bg-surface py-1.5 pr-2.5
+      pl-8 text-[12.5px] text-ink transition-colors placeholder:text-ink-muted
+      focus:border-brand focus:outline-none;
+  }
+
+  .chip {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-full border
+      border-line bg-surface px-2.5 py-1 text-[11.5px] font-medium text-ink-soft
+      transition-colors hover:bg-surface-2 disabled:pointer-events-none
+      disabled:opacity-45;
+  }
+
+  .chip-on {
+    @apply border-brand-line bg-brand-tint text-brand-ink;
+  }
+
+  /* ---------- Menus ---------- */
+
+  .menu {
+    @apply absolute top-[calc(100%+6px)] z-50 min-w-56 rounded-card border
+      border-line bg-surface p-1 shadow-e3;
+  }
+
+  .menu-item {
+    @apply flex w-full cursor-pointer flex-col gap-0.5 rounded-[6px] px-2.5 py-1.5
+      text-left text-[12.5px] text-ink-soft transition-colors outline-none
+      hover:bg-surface-2 hover:text-ink focus-visible:bg-surface-2
+      focus-visible:text-ink disabled:pointer-events-none disabled:opacity-45;
+  }
+
+  .menu-item-on {
+    @apply bg-brand-tint text-brand-ink hover:bg-brand-tint-2;
+  }
+
+  /* ---------- Feedback ---------- */
+
+  .spinner {
+    @apply inline-block size-3.5 shrink-0 animate-spin rounded-full border-2
+      border-current border-t-transparent;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-[5px] bg-surface-3;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--surface) 70%, transparent),
+      transparent
+    );
+    animation: shimmer 1.4s infinite;
+  }
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
-.row-worst > * {
-  background: rgba(208, 59, 59, 0.035);
-}
+@layer utilities {
+  .tabnum {
+    font-variant-numeric: tabular-nums;
+  }
 
-/* ---------- Theme and sentiment marks ---------- */
+  .animate-drawer {
+    animation: drawer-in 0.18s ease-out both;
+  }
 
-/* 2px surface gap separates the fills — no strokes on data marks */
-.sentiment-bar {
-  display: flex;
-  gap: 2px;
-  height: 18px;
-}
+  .animate-toast {
+    animation: toast-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  }
 
-.sentiment-seg:first-child {
-  border-radius: 4px 0 0 4px;
-}
-.sentiment-seg:last-child {
-  border-radius: 0 4px 4px 0;
-}
+  @keyframes drawer-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 
-.theme-track {
-  height: 6px;
-  background: var(--grid);
-  border-radius: 3px;
-  overflow: hidden;
-}
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 
-.theme-fill {
-  height: 6px;
-  border-radius: 3px;
-}
-
-.swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-  display: inline-block;
-}
-
-.quote {
-  border-left: 2px solid var(--grid);
-  padding-left: 0.6rem;
-  font-style: italic;
-  color: var(--ink-muted);
-}
-
-/* ---------- Draft wording ---------- */
-
-.superseded {
-  text-decoration: line-through;
-  text-decoration-color: rgba(11, 11, 11, 0.25);
-  color: var(--ink-muted);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner-border {
-    animation-duration: 2s;
+  @media (prefers-reduced-motion: reduce) {
+    .animate-drawer,
+    .animate-toast {
+      animation: none;
+    }
+    .skeleton::after {
+      animation: none;
+    }
+    .animate-spin {
+      animation-duration: 1.8s;
+    }
+    * {
+      transition-duration: 0.01ms !important;
+    }
   }
 }

@@ -1,190 +1,138 @@
-import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { campaigns } from '../data/mockData'
 import { DATE_FILTERS, formatRange } from '../utils/dateFilter'
-import {
-  exportDropoutData,
-  exportResponseThemes,
-  exportFullAnalysis,
-} from '../utils/csv'
+import { exportDropoutData, exportFullAnalysis } from '../utils/csv'
+import { Menu, MenuItem } from './Menu'
+import { useToast } from './Toast'
+import { CalendarIcon, DownloadIcon, MegaphoneIcon } from './Icons'
 
-/**
- * Bootstrap dropdown markup, driven by React state instead of Bootstrap's
- * JS bundle — no Popper dependency, and Escape / outside-click still work.
- */
-function useDismissable(onClose) {
-  const ref = useRef(null)
-  useEffect(() => {
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) onClose()
-    }
-    const onKey = (e) => e.key === 'Escape' && onClose()
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
-  return ref
-}
+const n = (v) => v.toLocaleString('en-US')
 
 export function CampaignSelector() {
   const { campaignId, selectCampaign, campaign } = useApp()
-  const [open, setOpen] = useState(false)
-  const ref = useDismissable(() => setOpen(false))
 
   return (
-    <div className="dropdown" ref={ref}>
-      <button
-        type="button"
-        className="btn btn-outline-secondary btn-sm dropdown-toggle text-truncate"
-        style={{ maxWidth: 260 }}
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-      >
-        {campaign.name}
-      </button>
-      <ul className={open ? 'dropdown-menu show' : 'dropdown-menu'}>
-        <li>
-          <h6 className="dropdown-header">Campaign</h6>
-        </li>
-        {campaigns.map((c) => (
-          <li key={c.id}>
-            <button
-              type="button"
-              className={
-                c.id === campaignId ? 'dropdown-item active' : 'dropdown-item'
-              }
-              onClick={() => {
-                selectCampaign(c.id)
-                setOpen(false)
-              }}
-            >
-              <div>{c.name}</div>
-              <small
-                className={c.id === campaignId ? 'text-white-50' : 'text-muted'}
-              >
-                {c.metrics.current.respondents.toLocaleString('en-US')}{' '}
-                respondents · {c.period.current.label}
-              </small>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Menu
+      label="Select campaign"
+      widthClass="w-[19rem]"
+      heading="Campaign"
+      triggerClassName="btn btn-secondary max-w-[15rem] sm:max-w-[17rem]"
+      trigger={
+        <>
+          <MegaphoneIcon width={14} height={14} className="shrink-0 text-brand" />
+          <span className="truncate font-semibold">{campaign.name}</span>
+        </>
+      }
+    >
+      {campaigns.map((c) => (
+        <MenuItem
+          key={c.id}
+          selected={c.id === campaignId}
+          hint={`${n(c.metrics.current.respondents)} respondents · ${c.period.current.label}`}
+          onSelect={() => selectCampaign(c.id)}
+        >
+          {c.name}
+        </MenuItem>
+      ))}
+    </Menu>
   )
 }
 
 export function DateFilter() {
   const { filterId, setFilterId, range } = useApp()
-  const [open, setOpen] = useState(false)
-  const ref = useDismissable(() => setOpen(false))
+  const active = DATE_FILTERS.find((f) => f.id === filterId)
 
   return (
-    <div className="dropdown" ref={ref}>
-      <button
-        type="button"
-        className="btn btn-outline-secondary btn-sm dropdown-toggle"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-      >
-        {DATE_FILTERS.find((f) => f.id === filterId)?.label}
-        <span className="text-muted ms-2 d-none d-xl-inline">
-          {formatRange(range)}
-        </span>
-      </button>
-      <ul className={open ? 'dropdown-menu show' : 'dropdown-menu'}>
-        {DATE_FILTERS.map((f) => (
-          <li key={f.id}>
-            <button
-              type="button"
-              className={
-                f.id === filterId ? 'dropdown-item active' : 'dropdown-item'
-              }
-              onClick={() => {
-                setFilterId(f.id)
-                setOpen(false)
-              }}
-            >
-              {f.label}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Menu
+      label="Date range"
+      heading="Date range"
+      trigger={
+        <>
+          <CalendarIcon width={14} height={14} className="shrink-0 text-ink-muted" />
+          <span className="font-semibold">{active?.label}</span>
+          <span className="ml-1 hidden border-l border-line pl-2 font-normal text-ink-muted xl:inline">
+            {formatRange(range)}
+          </span>
+        </>
+      }
+    >
+      {DATE_FILTERS.map((f) => (
+        <MenuItem
+          key={f.id}
+          selected={f.id === filterId}
+          onSelect={() => setFilterId(f.id)}
+        >
+          {f.label}
+        </MenuItem>
+      ))}
+    </Menu>
   )
 }
 
 export function ExportMenu() {
-  const { campaign, rows, range, results } = useApp()
-  const [open, setOpen] = useState(false)
-  const ref = useDismissable(() => setOpen(false))
+  const { campaign, rows, range } = useApp()
+  const { toast } = useToast()
 
   const items = [
     {
       id: 'dropout',
-      label: 'Dropout Data',
+      label: 'Dropout data',
       hint: `${rows.length} questions`,
       enabled: true,
+      done: `${rows.length} question rows for ${campaign.name}.`,
       run: () => exportDropoutData(campaign, rows, range),
     },
     {
-      id: 'themes',
-      label: 'Response Themes',
-      hint: results.themes
-        ? `${results.themes.themes.length} themes`
-        : 'Run Analyze Responses first',
-      enabled: Boolean(results.themes),
-      run: () => exportResponseThemes(campaign, results.themes, range),
-    },
-    {
       id: 'full',
-      label: 'Full Analysis',
-      hint: results.themes
-        ? 'Dropout metrics + discovered themes'
-        : 'Dropout metrics only until themes are run',
+      label: 'Full analysis',
+      hint: 'Dropout metrics with period comparison',
       enabled: true,
-      run: () =>
-        exportFullAnalysis(campaign, { rows, themes: results.themes, range }),
+      done: 'Every question with its rates, change and answer time.',
+      run: () => exportFullAnalysis(campaign, { rows, themes: null, range }),
     },
   ]
 
+  const download = (item) => {
+    try {
+      item.run()
+      toast({
+        tone: 'success',
+        title: `${item.label} exported`,
+        description: item.done,
+      })
+    } catch (error) {
+      toast({
+        tone: 'error',
+        title: 'Export failed',
+        description: error.message,
+        duration: 0,
+      })
+    }
+  }
+
   return (
-    <div className="dropdown" ref={ref}>
-      <button
-        type="button"
-        className="btn btn-outline-secondary btn-sm dropdown-toggle"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-      >
-        Export
-      </button>
-      <ul
-        className={
-          open ? 'dropdown-menu dropdown-menu-end show' : 'dropdown-menu'
-        }
-      >
-        <li>
-          <h6 className="dropdown-header">Download CSV</h6>
-        </li>
-        {items.map((item) => (
-          <li key={item.id}>
-            <button
-              type="button"
-              className="dropdown-item"
-              disabled={!item.enabled}
-              onClick={() => {
-                item.run()
-                setOpen(false)
-              }}
-            >
-              <div>{item.label}</div>
-              <small className="text-muted">{item.hint}</small>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Menu
+      label="Export data"
+      align="end"
+      widthClass="w-[17rem]"
+      heading="Download CSV"
+      trigger={
+        <>
+          <DownloadIcon width={14} height={14} className="shrink-0 text-ink-muted" />
+          <span className="font-semibold">Export</span>
+        </>
+      }
+    >
+      {items.map((item) => (
+        <MenuItem
+          key={item.id}
+          hint={item.hint}
+          disabled={!item.enabled}
+          onSelect={() => download(item)}
+        >
+          {item.label}
+        </MenuItem>
+      ))}
+    </Menu>
   )
 }

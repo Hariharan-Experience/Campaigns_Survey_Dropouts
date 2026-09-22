@@ -79,6 +79,36 @@ const mortgage = {
     { channel: 'QR / kiosk', sent: 600, completed: 264 },
   ],
 
+  // Weekly dropout, summing exactly to metrics.<period>.respondents
+  // and .incomplete. Verified on import by verifyCampaign().
+  trend: {
+    previous: [
+      { weekStart: '2026-04-01', respondents: 709, dropped: 230 },
+      { weekStart: '2026-04-08', respondents: 667, dropped: 218 },
+      { weekStart: '2026-04-15', respondents: 752, dropped: 247 },
+      { weekStart: '2026-04-22', respondents: 688, dropped: 227 },
+      { weekStart: '2026-04-29', respondents: 737, dropped: 244 },
+      { weekStart: '2026-05-06', respondents: 652, dropped: 217 },
+      { weekStart: '2026-05-13', respondents: 766, dropped: 257 },
+      { weekStart: '2026-05-20', respondents: 702, dropped: 236 },
+      { weekStart: '2026-05-27', respondents: 730, dropped: 247 },
+      { weekStart: '2026-06-03', respondents: 674, dropped: 229 },
+      { weekStart: '2026-06-10', respondents: 745, dropped: 255 },
+      { weekStart: '2026-06-17', respondents: 695, dropped: 239 },
+      { weekStart: '2026-06-24', respondents: 723, dropped: 244 },
+    ],
+    current: [
+      { weekStart: '2026-07-01', respondents: 1228, dropped: 375 },
+      { weekStart: '2026-07-08', respondents: 1155, dropped: 370 },
+      { weekStart: '2026-07-15', respondents: 1302, dropped: 436 },
+      { weekStart: '2026-07-22', respondents: 1191, dropped: 417 },
+      { weekStart: '2026-07-29', respondents: 1277, dropped: 466 },
+      { weekStart: '2026-08-05', respondents: 1130, dropped: 429 },
+      { weekStart: '2026-08-12', respondents: 1327, dropped: 524 },
+      { weekStart: '2026-08-19', respondents: 1390, dropped: 583 },
+    ],
+  },
+
   questions: [
     {
       id: 'mtg-q1',
@@ -443,6 +473,32 @@ const healthcare = {
     { channel: 'QR / kiosk', sent: 300, completed: 160 },
   ],
 
+  // Weekly dropout, summing exactly to metrics.<period>.respondents
+  // and .incomplete. Verified on import by verifyCampaign().
+  trend: {
+    previous: [
+      { weekStart: '2026-05-01', respondents: 733, dropped: 260 },
+      { weekStart: '2026-05-08', respondents: 689, dropped: 242 },
+      { weekStart: '2026-05-15', respondents: 777, dropped: 270 },
+      { weekStart: '2026-05-22', respondents: 711, dropped: 244 },
+      { weekStart: '2026-05-29', respondents: 762, dropped: 259 },
+      { weekStart: '2026-06-05', respondents: 674, dropped: 227 },
+      { weekStart: '2026-06-12', respondents: 791, dropped: 263 },
+      { weekStart: '2026-06-19', respondents: 725, dropped: 238 },
+      { weekStart: '2026-06-26', respondents: 538, dropped: 177 },
+    ],
+    current: [
+      { weekStart: '2026-07-01', respondents: 835, dropped: 280 },
+      { weekStart: '2026-07-08', respondents: 785, dropped: 255 },
+      { weekStart: '2026-07-15', respondents: 885, dropped: 279 },
+      { weekStart: '2026-07-22', respondents: 810, dropped: 247 },
+      { weekStart: '2026-07-29', respondents: 869, dropped: 256 },
+      { weekStart: '2026-08-05', respondents: 768, dropped: 219 },
+      { weekStart: '2026-08-12', respondents: 902, dropped: 248 },
+      { weekStart: '2026-08-19', respondents: 946, dropped: 256 },
+    ],
+  },
+
   questions: [
     {
       id: 'hc-q1',
@@ -788,6 +844,21 @@ const employee = {
     { channel: 'SMS', sent: 150, completed: 85 },
     { channel: 'QR / kiosk', sent: 50, completed: 35 },
   ],
+
+  // Weekly dropout, summing exactly to metrics.<period>.respondents
+  // and .incomplete. Verified on import by verifyCampaign().
+  trend: {
+    previous: [
+      { weekStart: '2026-02-02', respondents: 845, dropped: 241 },
+      { weekStart: '2026-02-09', respondents: 795, dropped: 233 },
+      { weekStart: '2026-02-16', respondents: 640, dropped: 196 },
+    ],
+    current: [
+      { weekStart: '2026-08-03', respondents: 890, dropped: 280 },
+      { weekStart: '2026-08-10', respondents: 836, dropped: 293 },
+      { weekStart: '2026-08-17', respondents: 674, dropped: 267 },
+    ],
+  },
 
   questions: [
     {
@@ -1197,6 +1268,23 @@ function verifyCampaign(c) {
     c.scoreDistribution.reduce((s, d) => s + d.score * d.count, 0) / distTotal
   if (Math.abs(weighted - averageScore) > 0.05) {
     errors.push(`scoreDistribution weights to ${weighted.toFixed(2)}, not ${averageScore}`)
+  }
+
+  for (const period of ['current', 'previous']) {
+    const weeks = c.trend?.[period] ?? []
+    const m = c.metrics[period]
+    const seen = weeks.reduce((sum, w) => sum + w.respondents, 0)
+    const left = weeks.reduce((sum, w) => sum + w.dropped, 0)
+    if (!weeks.length) errors.push(`${period}: no trend buckets`)
+    if (seen !== m.respondents) {
+      errors.push(`${period}: trend respondents sum to ${seen}, not ${m.respondents}`)
+    }
+    if (left !== m.incomplete) {
+      errors.push(`${period}: trend dropped sums to ${left}, not ${m.incomplete}`)
+    }
+    if (weeks.some((w) => w.dropped > w.respondents)) {
+      errors.push(`${period}: a trend week drops more than it receives`)
+    }
   }
 
   const sent = c.channels.reduce((s, ch) => s + ch.sent, 0)
