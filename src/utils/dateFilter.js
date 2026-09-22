@@ -7,14 +7,13 @@
 export const TODAY = '2026-08-26'
 
 export const DATE_FILTERS = [
-  { id: 'last7', label: 'Last 7 days' },
-  { id: 'last30', label: 'Last 30 days' },
-  { id: 'last90', label: 'Last 90 days' },
-  { id: 'thisQuarter', label: 'This quarter' },
-  { id: 'prevQuarter', label: 'Previous quarter' },
+  { id: 'last7', label: 'Last 7 days', days: 7 },
+  { id: 'last15', label: 'Last 15 days', days: 15 },
+  { id: 'last30', label: 'Last 30 days', days: 30 },
+  { id: 'last90', label: 'Last 90 days', days: 90 },
 ]
 
-export const DEFAULT_FILTER = 'thisQuarter'
+export const DEFAULT_FILTER = 'last30'
 
 const iso = (d) => d.toISOString().slice(0, 10)
 
@@ -24,33 +23,17 @@ function minusDays(dateStr, days) {
   return iso(d)
 }
 
-function quarterBounds(dateStr, offset = 0) {
-  const d = new Date(`${dateStr}T00:00:00Z`)
-  const q = Math.floor(d.getUTCMonth() / 3) + offset
-  const year = d.getUTCFullYear() + Math.floor(q / 4)
-  const qi = ((q % 4) + 4) % 4
-  const start = new Date(Date.UTC(year, qi * 3, 1))
-  const end = new Date(Date.UTC(year, qi * 3 + 3, 0))
-  return { start: iso(start), end: iso(end), quarter: `Q${qi + 1} ${year}` }
-}
-
 export function resolveRange(id, today = TODAY) {
-  switch (id) {
-    case 'last7':
-      return { id, start: minusDays(today, 6), end: today, label: 'Last 7 days' }
-    case 'last30':
-      return { id, start: minusDays(today, 29), end: today, label: 'Last 30 days' }
-    case 'last90':
-      return { id, start: minusDays(today, 89), end: today, label: 'Last 90 days' }
-    case 'prevQuarter': {
-      const q = quarterBounds(today, -1)
-      return { id, start: q.start, end: q.end, label: `Previous quarter (${q.quarter})` }
-    }
-    case 'thisQuarter':
-    default: {
-      const q = quarterBounds(today, 0)
-      return { id: 'thisQuarter', start: q.start, end: q.end, label: `This quarter (${q.quarter})` }
-    }
+  const filter =
+    DATE_FILTERS.find((f) => f.id === id) ??
+    DATE_FILTERS.find((f) => f.id === DEFAULT_FILTER)
+
+  // The window is inclusive of today, so an N-day range reaches back N-1.
+  return {
+    id: filter.id,
+    start: minusDays(today, filter.days - 1),
+    end: today,
+    label: filter.label,
   }
 }
 

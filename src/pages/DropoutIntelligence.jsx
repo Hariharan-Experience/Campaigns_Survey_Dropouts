@@ -29,7 +29,7 @@ export default function DropoutIntelligence() {
             </span>
             <div className="min-w-0">
               <h1 className="truncate text-[13.5px] leading-tight font-semibold">
-                Survey Dropout &amp; Response Intelligence
+                Survey Dropout Intelligence
               </h1>
               <p className="truncate text-[11.5px] text-ink-muted">
                 {campaign.owner} · {campaign.industry}
@@ -51,10 +51,6 @@ export default function DropoutIntelligence() {
             <h2 className="text-[17px] font-semibold tracking-tight">
               {campaign.name}
             </h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] font-semibold text-ink-soft">
-              <span className="size-1.5 rounded-full bg-good" aria-hidden="true" />
-              {campaign.status}
-            </span>
           </div>
           <p className="mt-1 max-w-[80ch] text-[12px] text-ink-muted">
             {campaign.audience}

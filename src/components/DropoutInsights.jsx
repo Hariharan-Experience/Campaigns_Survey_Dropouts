@@ -4,6 +4,8 @@ import {
   buildDropoutRows,
   worstRow,
   formatDuration,
+  typeLabel,
+  typesIn,
 } from '../utils/dropout'
 import { ArrowDownIcon, ArrowUpIcon, SearchIcon, SortIcon } from './Icons'
 
@@ -37,6 +39,7 @@ const pctText = (v) => `${v.toFixed(1)}%`
 const COLUMNS = [
   { id: 'question', label: 'Survey question', sort: (r) => r.order },
   { id: 'type', label: 'Type', sort: (r) => r.typeLabel },
+  { id: 'source', label: 'Survey source', sort: (r) => r.sourceLabel },
   { id: 'reached', label: 'Reached', align: 'right', numeric: true, sort: (r) => r.reached },
   { id: 'dropped', label: 'Dropped', align: 'right', numeric: true, sort: (r) => r.dropped },
   { id: 'rate', label: 'Dropout rate', align: 'right', numeric: true, sort: (r) => r.dropoutRate },
@@ -91,17 +94,21 @@ function SortableHeader({ column, sort, onSort }) {
 export default function DropoutInsights({ campaign }) {
   const [sort, setSort] = useState({ id: 'question', dir: 'asc' })
   const [query, setQuery] = useState('')
+  const [type, setType] = useState('all')
 
   const rows = useMemo(() => buildDropoutRows(campaign), [campaign])
   const worst = worstRow(rows)
   const m = campaign.metrics.current
   const maxRate = Math.max(...rows.map((r) => r.dropoutRate))
   const average = averageDropoutRate(rows)
+  const types = useMemo(() => typesIn(rows), [rows])
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
     const filtered = rows.filter(
-      (r) => !q || r.text.toLowerCase().includes(q) || `q${r.order}`.includes(q),
+      (r) =>
+        (type === 'all' || r.type === type) &&
+        (!q || r.text.toLowerCase().includes(q) || `q${r.order}`.includes(q)),
     )
 
     const column = COLUMNS.find((c) => c.id === sort.id)
@@ -114,7 +121,7 @@ export default function DropoutInsights({ campaign }) {
       if (av === bv) return a.order - b.order
       return (av > bv ? 1 : -1) * dir
     })
-  }, [rows, query, sort])
+  }, [rows, query, sort, type])
 
   const onSort = (column) => {
     setSort((cur) =>
@@ -124,8 +131,11 @@ export default function DropoutInsights({ campaign }) {
     )
   }
 
-  const isFiltered = query.trim() !== ''
-  const reset = () => setQuery('')
+  const isFiltered = query.trim() !== '' || type !== 'all'
+  const reset = () => {
+    setQuery('')
+    setType('all')
+  }
 
   return (
     <section className="card mb-4 overflow-hidden">
@@ -133,12 +143,12 @@ export default function DropoutInsights({ campaign }) {
         <div>
           <div className="eyebrow">Survey dropout</div>
           <h2 className="mt-1 text-[15px] font-semibold tracking-tight">
-            Where are respondents dropping out?
+            Dropout by question
           </h2>
           <p className="mt-0.5 text-[12px] text-ink-muted">
             {n(m.incomplete)} of {n(m.respondents)} respondents left before
-            finishing · compared with {campaign.period.previous.label} · survey
-            average {average.toFixed(1)}% per question, marked on every bar
+            finishing. Survey average {average.toFixed(1)}% per question, marked
+            on each bar.
           </p>
         </div>
       </div>
@@ -161,7 +171,26 @@ export default function DropoutInsights({ campaign }) {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 lg:hidden">
+        <div className="flex items-center gap-1.5">
+          <label htmlFor="filter-type" className="eyebrow">
+            Type
+          </label>
+          <select
+            id="filter-type"
+            className="rounded-control border border-line bg-surface px-2 py-1.5 text-[12.5px] text-ink focus:border-brand focus:outline-none"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="all">All types</option>
+            {types.map((t) => (
+              <option key={t} value={t}>
+                {typeLabel(t)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-1.5 xl:hidden">
           <label htmlFor="sort-questions" className="eyebrow">
             Sort
           </label>
@@ -208,7 +237,7 @@ export default function DropoutInsights({ campaign }) {
         </div>
       </div>
 
-      <div className="hidden overflow-x-auto lg:block">
+      <div className="hidden overflow-x-auto xl:block">
         <table className="w-full min-w-[1010px] border-collapse text-[12.5px]">
           <caption className="sr-only">
             Dropout by question for {campaign.name}, sorted by{' '}
@@ -303,6 +332,10 @@ export default function DropoutInsights({ campaign }) {
                     </span>
                   </td>
 
+                  <td className="px-3 py-2.5 align-middle whitespace-nowrap text-ink-soft">
+                    {r.sourceLabel}
+                  </td>
+
                   <td className="px-3 py-2.5 text-right align-middle tabnum">
                     {n(r.reached)}
                   </td>
@@ -354,7 +387,7 @@ export default function DropoutInsights({ campaign }) {
       {/* Below lg the table's 1010px minimum would force a horizontal scroll
           that pushes every metric off a phone screen, so the same rows are
           dealt out as cards. Identical data, one column. */}
-      <ul className="divide-y divide-line-soft lg:hidden">
+      <ul className="divide-y divide-line-soft xl:hidden">
         {visible.length === 0 && (
           <li className="px-4 py-10 text-center">
             <p className="text-[13px] font-semibold">No questions match</p>
@@ -386,6 +419,9 @@ export default function DropoutInsights({ campaign }) {
                   {r.typeLabel}
                 </span>
                 {isWorst && <WorstBadge />}
+                <span className="text-[10.5px] text-ink-muted">
+                  via {r.sourceLabel}
+                </span>
               </div>
 
               {/* Dropout rate leads the card — it is what the panel is about */}

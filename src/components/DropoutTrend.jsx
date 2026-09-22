@@ -103,11 +103,11 @@ export default function DropoutTrend({ campaign }) {
         <div>
           <div className="eyebrow">Dropout trend</div>
           <h2 className="mt-1 text-[15px] font-semibold tracking-tight">
-            Is dropout getting better or worse?
+            Weekly dropout rate
           </h2>
           <p className="mt-0.5 text-[12px] text-ink-muted">
-            Weekly dropout rate across {series.previousLabel} and{' '}
-            {series.currentLabel} · each point is one week of respondents
+            Across {series.previousLabel} and {series.currentLabel} · each
+            point is one week of respondents
           </p>
         </div>
 
